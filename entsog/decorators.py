@@ -170,13 +170,14 @@ def week_limited(func):
         frames = []
         count = 0
         for _start, _end in blocks:
-            print(f'{count} of {len(blocks)}')
+            print(f'{count} of {sum(1 for _ in blocks)}')
             try:
                 frame = func(*args, start=_start, end=_end, **kwargs)
             except NoMatchingDataError:
                 print(f"NoMatchingDataError: between {_start} and {_end}", file=sys.stderr)
                 frame = None
             frames.append(frame)
+            count += 1
 
         if sum([f is None for f in frames]) == len(frames):
             # All the data returned are void
