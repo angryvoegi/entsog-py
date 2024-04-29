@@ -168,7 +168,9 @@ def week_limited(func):
     def week_wrapper(*args, start, end, **kwargs):
         blocks = week_blocks(start, end)
         frames = []
+        count = 0
         for _start, _end in blocks:
+            print(f'{count} of {len(blocks)}')
             try:
                 frame = func(*args, start=_start, end=_end, **kwargs)
             except NoMatchingDataError:
