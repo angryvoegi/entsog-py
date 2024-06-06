@@ -65,6 +65,8 @@ def documents_limited(n):
                 except NoMatchingDataError:
                     logging.debug(f"NoMatchingDataError: for offset {offset}")
                     break
+                except requests.exceptions.HTTPError:
+                    logging.debug(f"HTTPError: URL not found for offset {offset}")
 
             if len(frames) == 0:
                 # All the data returned are void

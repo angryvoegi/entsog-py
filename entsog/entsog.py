@@ -9,7 +9,8 @@ import requests
 
 from .decorators import *
 from .exceptions import GatewayTimeOut, UnauthorizedError, BadGatewayError, TooManyRequestsError
-from .mappings import Area, lookup_area, Indicator, lookup_balancing_zone, lookup_country, lookup_indicator, Country, BalancingZone
+from .mappings import Area, lookup_area, Indicator, lookup_balancing_zone, lookup_country, lookup_indicator, Country, \
+    BalancingZone
 from .parsers import *
 
 __title__ = "entsog-py"
@@ -19,6 +20,7 @@ __license__ = "MIT"
 
 URL = 'https://transparency.entsog.eu/api/v1'
 OFFSET = 10000
+
 
 class EntsogRawClient:
     """
@@ -96,7 +98,7 @@ class EntsogRawClient:
                 raise GatewayTimeOut
             elif response.status_code == 429:
                 raise TooManyRequestsError
-            else:        
+            else:
                 raise e
         else:
             if response.headers.get('content-type', '') == 'application/xml':
@@ -190,7 +192,7 @@ class EntsogRawClient:
         -----------------
         """
 
-        response = self._base_request(endpoint='/connectionpoints', params = {})
+        response = self._base_request(endpoint='/connectionpoints', params={})
 
         return response.text, response.url
 
@@ -347,7 +349,7 @@ class EntsogRawClient:
         """
 
         params = {
-            'hasData': has_data
+            # 'hasData': has_data
         }
 
         if country_code is not None:
@@ -501,7 +503,7 @@ class EntsogRawClient:
         -----------------
         """
         params = {
-            'hasData': has_data
+            # 'hasData': has_data
         }
         if country_code is not None:
             params['tSOCountry'] = lookup_country(country_code).code
@@ -959,8 +961,8 @@ class EntsogRawClient:
         response = self._base_request(endpoint='/aggregatedData', params=params)
 
         return response.text, response.url
-    
-    def query_interruptions(self, start : pd.Timestamp, end : pd.Timestamp) -> str:
+
+    def query_interruptions(self, start: pd.Timestamp, end: pd.Timestamp) -> str:
 
         """
         
@@ -1026,7 +1028,7 @@ class EntsogRawClient:
             'from': self._datetime_to_str(start),
             'to': self._datetime_to_str(end),
         }
-        response_text, response_url = self._base_request(endpoint='/interruptions', params = params)
+        response_text, response_url = self._base_request(endpoint='/interruptions', params=params)
 
         return response_text, response_url
 
@@ -1262,8 +1264,8 @@ class EntsogRawClient:
                                end: pd.Timestamp,
                                period_type: str = 'day',
                                indicators: Union[List[Indicator], List[str]] = None,
-                               point_directions : Optional[List[str]] = None,
-                               offset : int = None,
+                               point_directions: Optional[List[str]] = None,
+                               offset: int = None,
                                ) -> str:
 
         """
@@ -1331,11 +1333,11 @@ class EntsogRawClient:
             'to': self._datetime_to_str(end),
             'periodType': period_type
         }
-    
+
         if offset is not None:
             params['offset'] = offset
             params['limit'] = OFFSET
-            
+
         if indicators is not None:
             decoded_indicators = []
             for indicator in indicators:
@@ -1665,9 +1667,9 @@ class EntsogPandasClient(EntsogRawClient):
         data['url'] = url
 
         return data
-    
+
     @day_limited
-    def query_interruptions(self, start : pd.Timestamp, end : pd.Timestamp, verbose : bool = False) -> pd.DataFrame:
+    def query_interruptions(self, start: pd.Timestamp, end: pd.Timestamp, verbose: bool = False) -> pd.DataFrame:
 
         """
         Interruptions
@@ -1684,7 +1686,7 @@ class EntsogPandasClient(EntsogRawClient):
         pd.DataFrame
         """
 
-        json, url = super(EntsogPandasClient, self).query_interruptions(start = start, end = end)
+        json, url = super(EntsogPandasClient, self).query_interruptions(start=start, end=end)
         data = parse_interruptions(json, verbose)
         data['url'] = url
 
@@ -1798,8 +1800,8 @@ class EntsogPandasClient(EntsogRawClient):
             start=start,
             end=end,
             period_type=period_type,
-            indicators=indicators, 
-            offset = offset
+            indicators=indicators,
+            offset=offset
         )
         data = parse_operational_data(json, verbose)
         data['url'] = url
@@ -1808,27 +1810,26 @@ class EntsogPandasClient(EntsogRawClient):
 
     @year_limited
     def query_operational_point_data(
-        self,
-        start: pd.Timestamp,
-        end: pd.Timestamp,
-        point_directions : List[str],
-        period_type: str = 'day',
-        indicators: Union[List[Indicator], List[str]] = None,
-        verbose: bool = False) -> pd.DataFrame:        
+            self,
+            start: pd.Timestamp,
+            end: pd.Timestamp,
+            point_directions: List[str],
+            period_type: str = 'day',
+            indicators: Union[List[Indicator], List[str]] = None,
+            verbose: bool = False) -> pd.DataFrame:
 
         json_data, url = super(EntsogPandasClient, self).query_operational_data(
             start=start,
             end=end,
-            point_directions= point_directions,
+            point_directions=point_directions,
             period_type=period_type,
             indicators=indicators
         )
-        
+
         data = parse_operational_data(json_data, verbose)
         data['url'] = url
         return data
-    
-        
+
     @week_limited
     def _query_operational_data(self,
                                 start: pd.Timestamp,
